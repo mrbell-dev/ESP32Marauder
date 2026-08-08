@@ -23,7 +23,13 @@ endif()
 # --- Shared UI model sources (pure C, no LVGL) --------------------------
 # Populated by later tasks; kept as a variable so both sim and tests link it.
 set(UI_MODEL_SRCS
-    # ui/theme.c ui/nav.c ui/gauge.c ui/tools.c  (added in Tasks 2-5)
+    ui/theme.c
+    # ui/nav.c ui/gauge.c ui/tools.c  (added in Tasks 3-5)
+)
+
+# Test sources (unit tests for the pure model)
+set(UI_TEST_SRCS
+    tests/test_theme.c
 )
 
 # --- Simulator (LVGL + SDL) ---------------------------------------------
@@ -38,5 +44,5 @@ else()
 endif()
 
 # --- Test runner (pure model, no LVGL/SDL) ------------------------------
-add_executable(test_runner tests/test_runner.c ${UI_MODEL_SRCS})
+add_executable(test_runner tests/test_runner.c ${UI_TEST_SRCS} ${UI_MODEL_SRCS})
 target_include_directories(test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
