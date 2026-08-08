@@ -11,6 +11,9 @@ void test_nav_switch(void);
 void test_nav_subtab_clamp(void);
 void test_nav_names(void);
 void test_gauge_tracks_max_only_when_running(void);
+void test_tools_wifi_has_deauth(void);
+void test_tools_toggle(void);
+void test_tools_select_none_initially(void);
 
 int main(void) {
     RUN_TEST(test_theme_default);
@@ -21,6 +24,9 @@ int main(void) {
     RUN_TEST(test_nav_subtab_clamp);
     RUN_TEST(test_nav_names);
     RUN_TEST(test_gauge_tracks_max_only_when_running);
+    RUN_TEST(test_tools_wifi_has_deauth);
+    RUN_TEST(test_tools_toggle);
+    RUN_TEST(test_tools_select_none_initially);
 
     printf(g_test_failures ? "TESTS FAILED: %d\n" : "ALL TESTS PASSED\n", g_test_failures);
     return g_test_failures ? 1 : 0;
