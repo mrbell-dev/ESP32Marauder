@@ -25,13 +25,15 @@ endif()
 set(UI_MODEL_SRCS
     ui/theme.c
     ui/nav.c
-    # ui/gauge.c ui/tools.c  (added in Tasks 4-5)
+    ui/gauge.c
+    # ui/tools.c  (added in Task 5)
 )
 
 # Test sources (unit tests for the pure model)
 set(UI_TEST_SRCS
     tests/test_theme.c
     tests/test_nav.c
+    tests/test_gauge.c
 )
 
 # --- Simulator (LVGL + SDL) ---------------------------------------------
