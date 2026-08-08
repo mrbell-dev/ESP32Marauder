@@ -9,6 +9,8 @@
 #include "ui/nav.h"
 #include "ui/gauge.h"
 #include "ui/screen_radiation.h"
+#include "ui/tools.h"
+#include "ui/screen_tools.h"
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,6 +26,8 @@
 static NavState g_nav;
 static lv_obj_t *g_shell;
 static GaugeModel g_gauge;
+static ToolMenu g_tools;
+static const char *g_screen = "radiation";   /* which screen to mount (Task 9 adds a real router) */
 
 static void on_page(Page p)   { nav_set_page(&g_nav, p);   view_shell_refresh(g_shell, &g_nav); }
 static void on_subtab(int i)  { nav_set_subtab(&g_nav, i); view_shell_refresh(g_shell, &g_nav); }
@@ -33,13 +37,23 @@ static void build_ui(void) {
     view_theme_apply(&pal);
     nav_init(&g_nav);
     g_shell = view_shell_create(lv_screen_active(), &g_nav, on_page, on_subtab);
-
-    /* Task 7: mount the radiation gauge as the STATS/Radiation content.
-     * (A per-tab content router comes in Task 9.) */
-    nav_set_subtab(&g_nav, 1);
-    view_shell_refresh(g_shell, &g_nav);
     gauge_init(&g_gauge);
-    screen_radiation_create(view_shell_content(g_shell), &g_gauge);
+    toolmenu_wifi(&g_tools);
+
+    lv_obj_t *content = view_shell_content(g_shell);
+    if (!strcmp(g_screen, "tools")) {
+        nav_set_page(&g_nav, PAGE_ITEMS);
+        nav_set_subtab(&g_nav, 0);            /* WiFi */
+        toolmenu_toggle(&g_tools, 2);         /* expand Attacks */
+        toolmenu_select(&g_tools, 2, 0);      /* Deauth */
+        view_shell_refresh(g_shell, &g_nav);
+        screen_tools_create(content, &g_tools);
+    } else {
+        nav_set_page(&g_nav, PAGE_STATS);
+        nav_set_subtab(&g_nav, 1);            /* Radiation */
+        view_shell_refresh(g_shell, &g_nav);
+        screen_radiation_create(content, &g_gauge);
+    }
 }
 
 static void feed_timer(lv_timer_t *t) {
@@ -97,6 +111,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--snapshot") && i + 1 < argc) snap = argv[++i];
         else if (!strcmp(argv[i], "--page") && i + 1 < argc) page = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--screen") && i + 1 < argc) g_screen = argv[++i];
     }
 
     lv_init();
@@ -105,13 +120,15 @@ int main(int argc, char **argv) {
         make_headless();          /* no SDL tick cb; driven by lv_tick_inc */
         build_ui();
         if (page >= 0 && page < PAGE_COUNT) on_page((Page)page);
-        /* seed the gauge so the snapshot shows a populated dial */
-        gauge_start(&g_gauge);
-        gauge_feed(&g_gauge, 42);
-        gauge_feed(&g_gauge, 71);
-        gauge_feed(&g_gauge, 42);
-        gauge_tick(&g_gauge, 125000);
-        screen_radiation_update(NULL, &g_gauge);
+        if (!strcmp(g_screen, "radiation")) {
+            /* seed the gauge so the snapshot shows a populated dial */
+            gauge_start(&g_gauge);
+            gauge_feed(&g_gauge, 42);
+            gauge_feed(&g_gauge, 71);
+            gauge_feed(&g_gauge, 42);
+            gauge_tick(&g_gauge, 125000);
+            screen_radiation_update(NULL, &g_gauge);
+        }
         return write_snapshot(snap);
     }
 
