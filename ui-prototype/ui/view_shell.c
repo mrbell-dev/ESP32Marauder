@@ -9,6 +9,7 @@ typedef struct {
     lv_obj_t       *content;
     lv_obj_t       *pagetab_cell[PAGE_COUNT];
     lv_obj_t       *pagetab_lbl[PAGE_COUNT];
+    lv_obj_t       *pagetab_dot[PAGE_COUNT];
     shell_page_cb   on_page;
     shell_subtab_cb on_subtab;
 } Shell;
@@ -68,6 +69,37 @@ static lv_obj_t *tab_cell(lv_obj_t *parent, const char *txt,
     return c;
 }
 
+/* A bottom page tab: [dot] LABEL, clickable as a whole. */
+static lv_obj_t *page_cell(lv_obj_t *parent, const char *txt, int idx,
+                           lv_obj_t **out_dot, lv_obj_t **out_lbl) {
+    lv_obj_t *c = lv_obj_create(parent);
+    lv_obj_set_size(c, LV_SIZE_CONTENT, lv_pct(100));
+    lv_obj_set_style_bg_opa(c, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(c, 0, 0);
+    lv_obj_set_style_pad_all(c, 0, 0);
+    lv_obj_set_style_pad_column(c, 5, 0);
+    lv_obj_remove_flag(c, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(c, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_flex_flow(c, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(c, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_add_event_cb(c, page_evt, LV_EVENT_CLICKED, (void *)(intptr_t)idx);
+
+    lv_obj_t *dot = lv_obj_create(c);
+    lv_obj_set_size(dot, 11, 11);
+    lv_obj_set_style_radius(dot, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_border_width(dot, 2, 0);
+    lv_obj_set_style_pad_all(dot, 0, 0);
+    lv_obj_remove_flag(dot, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_remove_flag(dot, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *l = lv_label_create(c);
+    lv_label_set_text(l, txt);
+
+    *out_dot = dot;
+    *out_lbl = l;
+    return c;
+}
+
 /* ---- public ----------------------------------------------------------- */
 
 lv_obj_t *view_shell_create(lv_obj_t *parent, const NavState *n,
@@ -117,8 +149,8 @@ lv_obj_t *view_shell_create(lv_obj_t *parent, const NavState *n,
     lv_obj_set_flex_align(pt, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     border_top(pt, p->dim);
     for (int i = 0; i < PAGE_COUNT; i++) {
-        g.pagetab_cell[i] = tab_cell(pt, "", page_evt, i);
-        g.pagetab_lbl[i] = lv_obj_get_child(g.pagetab_cell[i], 0);
+        g.pagetab_cell[i] = page_cell(pt, nav_page_name((Page)i), i,
+                                      &g.pagetab_dot[i], &g.pagetab_lbl[i]);
     }
 
     view_shell_refresh(root, n);
@@ -145,12 +177,13 @@ void view_shell_refresh(lv_obj_t *shell, const NavState *n) {
         lv_obj_set_style_text_decor(l, active ? LV_TEXT_DECOR_UNDERLINE : LV_TEXT_DECOR_NONE, 0);
     }
 
-    /* page-tab markers + highlight (ASCII so they render in Montserrat) */
+    /* page-tab dots (filled=active, hollow=inactive) + label highlight */
     for (int i = 0; i < PAGE_COUNT; i++) {
         bool active = (i == n->page);
-        char buf[24];
-        snprintf(buf, sizeof(buf), "%s %s", active ? "(*)" : "( )", nav_page_name((Page)i));
-        lv_label_set_text(g.pagetab_lbl[i], buf);
+        lv_obj_t *dot = g.pagetab_dot[i];
+        lv_obj_set_style_border_color(dot, active ? lv_color_hex(p->accent) : lv_color_hex(p->dim), 0);
+        lv_obj_set_style_bg_color(dot, lv_color_hex(p->accent), 0);
+        lv_obj_set_style_bg_opa(dot, active ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
         lv_obj_set_style_text_color(g.pagetab_lbl[i], active ? lv_color_hex(p->accent) : lv_color_hex(p->fg), 0);
     }
 }
