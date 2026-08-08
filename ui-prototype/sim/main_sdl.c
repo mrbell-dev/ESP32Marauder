@@ -7,6 +7,8 @@
 #include "ui/view_theme.h"
 #include "ui/view_shell.h"
 #include "ui/nav.h"
+#include "ui/gauge.h"
+#include "ui/screen_radiation.h"
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -21,6 +23,7 @@
 
 static NavState g_nav;
 static lv_obj_t *g_shell;
+static GaugeModel g_gauge;
 
 static void on_page(Page p)   { nav_set_page(&g_nav, p);   view_shell_refresh(g_shell, &g_nav); }
 static void on_subtab(int i)  { nav_set_subtab(&g_nav, i); view_shell_refresh(g_shell, &g_nav); }
@@ -30,6 +33,22 @@ static void build_ui(void) {
     view_theme_apply(&pal);
     nav_init(&g_nav);
     g_shell = view_shell_create(lv_screen_active(), &g_nav, on_page, on_subtab);
+
+    /* Task 7: mount the radiation gauge as the STATS/Radiation content.
+     * (A per-tab content router comes in Task 9.) */
+    nav_set_subtab(&g_nav, 1);
+    view_shell_refresh(g_shell, &g_nav);
+    gauge_init(&g_gauge);
+    screen_radiation_create(view_shell_content(g_shell), &g_gauge);
+}
+
+static void feed_timer(lv_timer_t *t) {
+    (void)t;
+    if (g_gauge.running) {
+        gauge_feed(&g_gauge, rand() % 100);
+        gauge_tick(&g_gauge, 500);
+        screen_radiation_update(NULL, &g_gauge);
+    }
 }
 
 /* ---- headless snapshot ------------------------------------------------ */
@@ -86,6 +105,13 @@ int main(int argc, char **argv) {
         make_headless();          /* no SDL tick cb; driven by lv_tick_inc */
         build_ui();
         if (page >= 0 && page < PAGE_COUNT) on_page((Page)page);
+        /* seed the gauge so the snapshot shows a populated dial */
+        gauge_start(&g_gauge);
+        gauge_feed(&g_gauge, 42);
+        gauge_feed(&g_gauge, 71);
+        gauge_feed(&g_gauge, 42);
+        gauge_tick(&g_gauge, 125000);
+        screen_radiation_update(NULL, &g_gauge);
         return write_snapshot(snap);
     }
 
@@ -95,6 +121,7 @@ int main(int argc, char **argv) {
     lv_sdl_window_set_title(disp, "CLIP-BOY 3000 (sim)");
     lv_sdl_mouse_create();
     build_ui();
+    lv_timer_create(feed_timer, 500, NULL);
 
     while (1) {
         uint32_t idle = lv_timer_handler();

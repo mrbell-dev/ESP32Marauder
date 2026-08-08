@@ -41,6 +41,7 @@ set(UI_TEST_SRCS
 set(UI_VIEW_SRCS
     ui/view_theme.c
     ui/view_shell.c
+    ui/screen_radiation.c
     ui/fonts/vt323_16.c
     ui/fonts/vt323_24.c
 )
