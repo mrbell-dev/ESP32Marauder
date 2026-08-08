@@ -37,8 +37,14 @@ set(UI_TEST_SRCS
     tests/test_tools.c
 )
 
+# LVGL-dependent view sources (sim only, never in the pure-model tests)
+set(UI_VIEW_SRCS
+    ui/view_theme.c
+    ui/view_shell.c
+)
+
 # --- Simulator (LVGL + SDL) ---------------------------------------------
-add_executable(sim sim/main_sdl.c ${UI_MODEL_SRCS})
+add_executable(sim sim/main_sdl.c ${UI_MODEL_SRCS} ${UI_VIEW_SRCS})
 target_include_directories(sim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sim PRIVATE lvgl)
 if(TARGET SDL2::SDL2)
