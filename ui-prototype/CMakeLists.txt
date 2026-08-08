@@ -43,6 +43,7 @@ set(UI_VIEW_SRCS
     ui/view_shell.c
     ui/screen_radiation.c
     ui/screen_tools.c
+    ui/screen_status.c
     ui/fonts/vt323_16.c
     ui/fonts/vt323_24.c
 )
