@@ -32,6 +32,23 @@ static ToolMenu   g_tools;
 typedef enum { SCR_OTHER, SCR_RADIATION } CurScreen;
 static CurScreen g_cur = SCR_OTHER;
 
+static const char *g_theme_path = NULL;
+
+/* Load a palette from an SD-style JSON theme file; fall back to the built-in
+ * Pip-Boy green on any failure (mirrors the device's SD-load path). */
+static void load_theme(Palette *out) {
+    *out = palette_default_pipboy();
+    if (!g_theme_path) return;
+    FILE *f = fopen(g_theme_path, "rb");
+    if (!f) { fprintf(stderr, "theme: cannot open %s (using default)\n", g_theme_path); return; }
+    char buf[512];
+    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    buf[n] = 0;
+    fclose(f);
+    if (!theme_parse_json(buf, out))
+        fprintf(stderr, "theme: parse failed for %s (using default)\n", g_theme_path);
+}
+
 /* Mount the screen for the current (page, subtab) into the shell content. */
 static void mount_current(void) {
     lv_obj_t *c = view_shell_content(g_shell);
@@ -59,7 +76,8 @@ static void seed_models(void) {
 }
 
 static void build_ui(void) {
-    Palette pal = palette_default_pipboy();
+    Palette pal;
+    load_theme(&pal);
     view_theme_apply(&pal);
     nav_init(&g_nav);
     g_shell = view_shell_create(lv_screen_active(), &g_nav, on_page, on_subtab);
@@ -139,6 +157,7 @@ int main(int argc, char **argv) {
         if (!strcmp(argv[i], "--snapshot") && i + 1 < argc) snap = argv[++i];
         else if (!strcmp(argv[i], "--page") && i + 1 < argc) page = atoi(argv[++i]);
         else if (!strcmp(argv[i], "--subtab") && i + 1 < argc) subtab = atoi(argv[++i]);
+        else if (!strcmp(argv[i], "--theme") && i + 1 < argc) g_theme_path = argv[++i];
     }
 
     lv_init();
