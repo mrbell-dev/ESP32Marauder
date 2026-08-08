@@ -22,3 +22,7 @@
 [submodule "esp32_marauder/libraries/SwitchLib"]
 	path = esp32_marauder/libraries/SwitchLib
 	url = https://github.com/justcallmekoko/SwitchLib.git
+[submodule "ui-prototype/lvgl"]
+	path = ui-prototype/lvgl
+	url = https://github.com/lvgl/lvgl.git
+	branch = release/v9.5
