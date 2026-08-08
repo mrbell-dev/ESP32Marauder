@@ -24,9 +24,9 @@ lv_obj_t *screen_status_create(lv_obj_t *parent) {
     lv_obj_set_style_text_font(title, &font_vt323_24, 0);
     lv_obj_set_style_text_color(title, lv_color_hex(p->accent), 0);
 
-    lv_obj_t *coll = lv_label_create(root);
-    lv_label_set_text(coll, "Collectibles: 0 / 95");
-    lv_obj_set_style_text_color(coll, lv_color_hex(p->fg), 0);
+    lv_obj_t *stat = lv_label_create(root);
+    lv_label_set_text(stat, "APs: 0    Stations: 0");
+    lv_obj_set_style_text_color(stat, lv_color_hex(p->fg), 0);
 
     lv_obj_t *flavor = lv_label_create(root);
     lv_label_set_long_mode(flavor, LV_LABEL_LONG_WRAP);
