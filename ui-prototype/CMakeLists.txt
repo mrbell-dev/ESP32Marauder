@@ -24,12 +24,14 @@ endif()
 # Populated by later tasks; kept as a variable so both sim and tests link it.
 set(UI_MODEL_SRCS
     ui/theme.c
-    # ui/nav.c ui/gauge.c ui/tools.c  (added in Tasks 3-5)
+    ui/nav.c
+    # ui/gauge.c ui/tools.c  (added in Tasks 4-5)
 )
 
 # Test sources (unit tests for the pure model)
 set(UI_TEST_SRCS
     tests/test_theme.c
+    tests/test_nav.c
 )
 
 # --- Simulator (LVGL + SDL) ---------------------------------------------
