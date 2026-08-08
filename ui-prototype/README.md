@@ -23,3 +23,30 @@ cmake -B build && cmake --build build
 ```
 
 Requires: cmake, a C11 compiler, SDL2 (`libsdl2-dev`).
+
+### Headless snapshots (PNG)
+```bash
+./build/sim --snapshot status    --page 0 --subtab 0
+./build/sim --snapshot radiation --page 0 --subtab 1
+./build/sim --snapshot deauth    --page 1 --subtab 0
+./build/sim --snapshot amber     --page 0 --subtab 1 --theme themes/amber.json
+```
+PNGs land in `snapshots/`.
+
+## Build & view in a browser (WASM)
+Same C code, compiled to WebAssembly — runs offline in a browser and on a phone.
+```bash
+source ~/emsdk/emsdk_env.sh    # Emscripten on PATH
+./build-web.sh                 # -> web/index.html + .js + .wasm
+python3 -m http.server 8099 --directory web
+```
+Open `http://<this-machine-ip>:8099/` on any device on the LAN (phone included).
+The app exposes `window.pipboyGoto(page, subtab)` for scripted navigation.
+
+## Screenshot tests (Playwright)
+```bash
+cd tests/e2e
+npm install
+npx playwright install chromium   # one-time
+npx playwright test               # serves ../../web and screenshots each screen
+```

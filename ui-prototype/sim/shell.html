@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLIP-BOY 3000</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  body { display: flex; justify-content: center; align-items: center; }
+  canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+</style>
+</head>
+<body>
+<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+<script type="text/javascript">
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    onRuntimeInitialized: function () {
+      window.pipboyGoto = function (page, subtab) {
+        Module.ccall('pipboy_goto', null, ['number', 'number'], [page, subtab]);
+      };
+      window.pipboyReady = true;
+    }
+  };
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>
